@@ -2,8 +2,6 @@ name: Build and Release
 
 permissions:
   contents: write
-  pages: write
-  id-token: write
 
 on:
   push:
@@ -29,12 +27,8 @@ jobs:
       - name: Build
         run: npm run build
 
-      - name: Replace version strings
-        run: |
-          SHORT_SHA=$(echo "${{ github.sha }}" | cut -c1-7)
-          TAG="${{ github.event_name == 'release' && github.ref_name || '1.4' }}"
-          find ./dist -type f -name '*.js' -exec sed -i "s/%VERSION_STRING%/${SHORT_SHA}/g" {} +
-          find ./dist -type f -name '*.js' -exec sed -i "s/%VERSION_TAG%/${TAG}/g" {} +
+      - name: Replace version string with commit hash
+        run: find ./dist -type f -name '*.js' -exec sed -i "s/%VERSION_STRING%/${{ github.sha }}/g" {} +
 
       - name: Copy assets to dist
         run: |
@@ -44,12 +38,6 @@ jobs:
           cp -r src/download0/sfx dist/download0/
           cp -r src/download0/vid dist/download0/
           cp src/download0/*.aes dist/download0/
-          cp src/download0/config.json dist/download0/
-
-      - name: Generate manifest
-        run: |
-          cd dist/download0
-          find . -type f | sed 's|^\./||' | sort > manifest.txt
 
       - name: Encrypt savedata
         run: |
@@ -58,45 +46,8 @@ jobs:
           mkdir -p dist/savedata
           cp src/savedata/localstorage.aes dist/savedata/
 
-      - name: Build lite variant
-        run: |
-          mkdir -p dist-lite/download0
-          mkdir -p dist-lite/download0/themes/default
-          
-
-          # Core runtime JS
-          for f in serve.js.aes dummy_psn.json.aes loader.js userland.js types.js kernel.js \
-                   lapse.js netctrl_c0w_twins.js binloader.js check-jailbroken.js defs.js; do
-            cp dist/download0/$f dist-lite/download0/
-            
-          done
-
-          # Hardcoded lite config - auto detect, auto close, no music, no menu
-          printf '{
-              "config": {
-                  "autolapse": true,
-                  "autopoop": false,
-                  "autoclose": true,
-                  "autoclose_delay": 3000,
-                  "music": false,
-                  "jb_behavior": 0
-              },
-              "payloads": []
-          }' > dist-lite/download0/config.json
-
-          # Generate lite manifest
-          cd dist-lite/download0
-          find . -type f | sed 's|^\./||' | sort > manifest.txt
-          cd ../..
-
-          # Copy savedata
-          cp -r dist/savedata dist-lite/savedata 2>/dev/null || true
-
       - name: Zip dist
         run: cd dist && zip -r ../vue-after-free-${{ github.ref_name }}.zip download0/ savedata/ && cd ..
-
-      - name: Zip lite dist
-        run: cd dist-lite && zip -r ../vue-after-free-lite-${{ github.ref_name }}.zip download0/ savedata/ && cd ..
 
       - name: Upload dist artifact
         uses: actions/upload-artifact@v4
@@ -110,50 +61,6 @@ jobs:
           name: vue-after-free-${{ github.ref_name }}
           path: vue-after-free-${{ github.ref_name }}.zip
 
-      - name: Upload lite dist artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: dist-lite
-          path: dist-lite/
-
-      - name: Upload lite build artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: vue-after-free-lite-${{ github.ref_name }}
-          path: vue-after-free-lite-${{ github.ref_name }}.zip
-
-      - name: Upload release assets
-        if: github.event_name == 'release'
-        uses: softprops/action-gh-release@v2
-        with:
-          files: |
-            vue-after-free-${{ github.ref_name }}.zip
-            vue-after-free-lite-${{ github.ref_name }}.zip
-
-  deploy-pages:
-    needs: build
-    runs-on: ubuntu-latest
-
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-
-    steps:
-      - name: Download dist artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: dist
-          path: dist/
-
-      - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: dist/
-
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
-        
   ufs-image:
     needs: build
     runs-on: ubuntu-latest
@@ -173,114 +80,36 @@ jobs:
           run: |
             set -e
 
-            # Create 256MB image file
-            truncate -s 256M download0.dat
+            # 1. Crear el archivo con ceros REALES para ocupar 256MB físicos
+            dd if=/dev/zero of=download0.bin bs=1M count=256
 
-            # Attach as memory disk (returns e.g. "md0")
-            MD=$(mdconfig -a -t vnode -f "$(pwd)/download0.dat")
+            # 2. Configurar el disco de memoria
+            MD=$(mdconfig -a -t vnode -f download0.bin)
 
-            # Create UFS2 filesystem
+            # 3. Formatear como UFS2 (O2 es clave para PS4)
             newfs -O 2 -b 32768 -f 4096 /dev/${MD}
 
-            # Mount
+            # 4. Montar y copiar archivos
             mount /dev/${MD} /mnt
-
-            # Copy dist contents
             cp -R dist/download0/* /mnt/
-
-            # Create empty dirs
             mkdir -p /mnt/mgl /mnt/video_cache /mnt/xhr_cache
-
-            # Set permissions
             chmod -R 777 /mnt/*
 
-            # Unmount and detach
+            # 5. Desmontar
             umount /mnt
             mdconfig -d -u ${MD}
 
-      - name: Verify image
-        run: file download0.dat
+      - name: Verify image size
+        run: ls -lh download0.bin && du -sh download0.bin
 
       - name: Upload UFS2 image artifact
         uses: actions/upload-artifact@v4
         with:
-          name: download0.dat
-          path: download0.dat
-
-      - name: Delete dist artifact
-        uses: geekyeggo/delete-artifact@v5
-        with:
-          name: dist
+          name: download0_fixed
+          path: download0.bin
 
       - name: Upload UFS2 release asset
         if: github.event_name == 'release'
         uses: softprops/action-gh-release@v2
         with:
-          files: download0.dat
-
-  ufs-image-lite:
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - name: Download lite dist artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: dist-lite
-          path: dist-lite/
-
-      - name: Create lite UFS2 image in FreeBSD
-        uses: vmactions/freebsd-vm@v1
-        with:
-          release: "14.2"
-          copyback: true
-          prepare: ""
-          run: |
-            set -e
-
-            # Create 256MB image file
-            truncate -s 256M download0.dat
-
-            # Attach as memory disk
-            MD=$(mdconfig -a -t vnode -f "$(pwd)/download0.dat")
-
-            # Create UFS2 filesystem
-            newfs -O 2 -b 32768 -f 4096 /dev/${MD}
-
-            # Mount
-            mount /dev/${MD} /mnt
-
-            # Copy lite dist contents
-            cp -R dist-lite/download0/* /mnt/
-
-            # Create empty dirs
-            mkdir -p /mnt/mgl /mnt/video_cache /mnt/xhr_cache
-
-            # Set permissions
-            chmod -R 777 /mnt/*
-
-            # Unmount and detach
-            umount /mnt
-            mdconfig -d -u ${MD}
-
-      - name: Verify image
-        run: file download0.dat
-
-      - name: Zip lite UFS2 image
-        run: zip download0_dat_lite.zip download0.dat
-
-      - name: Upload lite UFS2 image artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: download0_dat_lite
-          path: download0_dat_lite.zip
-
-      - name: Delete lite dist artifact
-        uses: geekyeggo/delete-artifact@v5
-        with:
-          name: dist-lite
-
-      - name: Upload lite UFS2 release asset
-        if: github.event_name == 'release'
-        uses: softprops/action-gh-release@v2
-        with:
-          files: download0_dat_lite.zip
+          files: download0.bin
