@@ -9,13 +9,17 @@ import { lang } from 'download0/languages'
 
   const background = new Image({
     url: 'file:///../download0/img/multiview_bg_VAF.png',
-    x: 0, y: 0, width: 1920, height: 1080
+    x: 0,
+    y: 0,
+    width: 1920,
+    height: 1080
   })
   jsmaf.root.children.push(background)
 
   jsmaf.root.children.push(new jsmaf.Text({
     text: lang.config,
-    x: 960, y: 150,
+    x: 960,
+    y: 150,
     style: 'title',
     align: 'center'
   }))
@@ -32,7 +36,7 @@ import { lang } from 'download0/languages'
   const buttons: Image[] = []
   const labelTexts: jsmaf.Text[] = []
 
-  function updateHighlight() {
+  function updateHighlight () {
     for (let i = 0; i < buttons.length; i++) {
       if (i === currentButton) {
         buttons[i].opacity = 1.0
@@ -54,15 +58,18 @@ import { lang } from 'download0/languages'
     // Reducimos el ancho (width) de 1000 a 700 para que no se vean "largos"
     const btn = new Image({
       url: 'file:///assets/img/button_over_9.png',
-      x: 610, y: startY + (i * spacing),
-      width: 700, height: 85
+      x: 610,
+      y: startY + (i * spacing),
+      width: 700,
+      height: 85
     })
     buttons.push(btn)
     jsmaf.root.children.push(btn)
 
     const label = new jsmaf.Text({
       text: configOptions[i].label,
-      x: 960, y: startY + (i * spacing) + 28,
+      x: 960,
+      y: startY + (i * spacing) + 28,
       style: 'white',
       align: 'center'
     })

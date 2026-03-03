@@ -2,9 +2,9 @@ import { lang } from 'download0/languages'
 
 (function () {
   include('languages.js')
-  
+
   jsmaf.root.children.length = 0
-  
+
   // Estilos con nombres estándar para que siempre se vean
   new Style({ name: 'white', color: 'white', size: 26, shadowColor: 'black', shadowBlur: 4 })
   new Style({ name: 'gold_ui', color: '#FFD700', size: 28, shadowColor: 'orange', shadowBlur: 8, weight: 'bold' })
@@ -13,7 +13,10 @@ import { lang } from 'download0/languages'
   // Fondo con tus coordenadas originales (Las que SI te funcionaban)
   const background = new Image({
     url: 'file:///../download0/img/multiview_bg_VAF.png',
-    x: 0, y: 0, width: 1920, height: 1080
+    x: 0,
+    y: 0,
+    width: 1920,
+    height: 1080
   })
   jsmaf.root.children.push(background)
 
@@ -30,16 +33,17 @@ import { lang } from 'download0/languages'
 
   jsmaf.root.children.push(new jsmaf.Text({
     text: 'PS4 11.00 - GOLD EDITION',
-    x: 960, y: 150,
+    x: 960,
+    y: 150,
     style: 'title',
     align: 'center'
   }))
 
-  function updateHighlight() {
+  function updateHighlight () {
     for (let i = 0; i < buttons.length; i++) {
       if (i === currentButton) {
         buttons[i].opacity = 1.0
-        buttons[i].borderColor = '#FFD700' 
+        buttons[i].borderColor = '#FFD700'
         buttons[i].borderWidth = 4
         buttonTexts[i].style = 'gold_ui'
       } else {
@@ -56,15 +60,18 @@ import { lang } from 'download0/languages'
   for (let i = 0; i < menuOptions.length; i++) {
     const btn = new Image({
       url: 'file:///assets/img/button_over_9.png',
-      x: 610, y: startY + (i * spacing),
-      width: 700, height: 90
+      x: 610,
+      y: startY + (i * spacing),
+      width: 700,
+      height: 90
     })
     buttons.push(btn)
     jsmaf.root.children.push(btn)
 
     const txt = new jsmaf.Text({
       text: menuOptions[i].label,
-      x: 960, y: startY + (i * spacing) + 30,
+      x: 960,
+      y: startY + (i * spacing) + 30,
       style: 'white',
       align: 'center'
     })
