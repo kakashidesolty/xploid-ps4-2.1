@@ -1,10 +1,8 @@
 import { lang } from 'download0/languages'
-import { libc_addr } from 'download0/userland'
 
 (function () {
   jsmaf.root.children.length = 0
 
-  // Estilos idénticos al Main para evitar parpadeos o errores de carga
   new Style({ name: 'white', color: 'white', size: 26, shadowColor: 'black', shadowBlur: 4 })
   new Style({ name: 'gold_ui', color: '#FFD700', size: 28, shadowColor: 'orange', shadowBlur: 8, weight: 'bold' })
   new Style({ name: 'title', color: 'white', size: 36, shadowColor: 'black', shadowBlur: 5 })
@@ -15,7 +13,6 @@ import { libc_addr } from 'download0/userland'
   })
   jsmaf.root.children.push(background)
 
-  // Título
   jsmaf.root.children.push(new jsmaf.Text({
     text: lang.config,
     x: 960, y: 150,
@@ -54,11 +51,9 @@ import { libc_addr } from 'download0/userland'
     }
   }
 
-  // Dibujar UI de configuración
   const startY = 300
   const spacing = 110
   for (let i = 0; i < configOptions.length; i++) {
-    const opt = configOptions[i]
     const btn = new Image({
       url: 'file:///assets/img/button_over_9.png',
       x: 460, y: startY + (i * spacing),
@@ -68,14 +63,14 @@ import { libc_addr } from 'download0/userland'
     jsmaf.root.children.push(btn)
 
     const label = new jsmaf.Text({
-      text: opt.label,
+      text: configOptions[i].label,
       x: 500, y: startY + (i * spacing) + 28,
       style: 'white'
     })
     labelTexts.push(label)
     jsmaf.root.children.push(label)
 
-    if (opt.type !== 'action') {
+    if (configOptions[i].type !== 'action') {
       const val = new jsmaf.Text({
         text: '...',
         x: 1420, y: startY + (i * spacing) + 28,
