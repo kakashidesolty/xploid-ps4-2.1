@@ -21,17 +21,16 @@ import { lang } from 'download0/languages'
   }))
 
   const configOptions = [
-    { key: 'autolapse', label: lang.autoLapse, type: 'bool' },
-    { key: 'autopoop', label: lang.autoPoop, type: 'bool' },
-    { key: 'autoclose', label: lang.autoClose, type: 'bool' },
-    { key: 'jb_behavior', label: lang.jbBehavior, type: 'list', options: [lang.jbBehaviorAuto, lang.jbBehaviorNetctrl, lang.jbBehaviorLapse] },
-    { key: 'back', label: lang.back, type: 'action' }
+    { label: lang.autoLapse, key: 'autolapse' },
+    { label: lang.autoPoop, key: 'autopoop' },
+    { label: lang.autoClose, key: 'autoclose' },
+    { label: lang.jbBehavior, key: 'jb_behavior' },
+    { label: lang.back, key: 'back' }
   ]
 
   let currentButton = 0
   const buttons: Image[] = []
   const labelTexts: jsmaf.Text[] = []
-  const valueTexts: any[] = []
 
   function updateHighlight() {
     for (let i = 0; i < buttons.length; i++) {
@@ -40,48 +39,35 @@ import { lang } from 'download0/languages'
         buttons[i].borderColor = '#FFD700'
         buttons[i].borderWidth = 4
         labelTexts[i].style = 'gold_ui'
-        if (valueTexts[i]) valueTexts[i].style = 'gold_ui'
       } else {
         buttons[i].opacity = 0.7
         buttons[i].borderColor = 'transparent'
         buttons[i].borderWidth = 0
         labelTexts[i].style = 'white'
-        if (valueTexts[i]) valueTexts[i].style = 'white'
       }
     }
   }
 
-  const startY = 300
+  const startY = 320
   const spacing = 110
   for (let i = 0; i < configOptions.length; i++) {
+    // Reducimos el ancho (width) de 1000 a 700 para que no se vean "largos"
     const btn = new Image({
       url: 'file:///assets/img/button_over_9.png',
-      x: 460, y: startY + (i * spacing),
-      width: 1000, height: 85
+      x: 610, y: startY + (i * spacing),
+      width: 700, height: 85
     })
     buttons.push(btn)
     jsmaf.root.children.push(btn)
 
     const label = new jsmaf.Text({
       text: configOptions[i].label,
-      x: 500, y: startY + (i * spacing) + 28,
-      style: 'white'
+      x: 960, y: startY + (i * spacing) + 28,
+      style: 'white',
+      align: 'center'
     })
     labelTexts.push(label)
     jsmaf.root.children.push(label)
-
-    if (configOptions[i].type !== 'action') {
-      const val = new jsmaf.Text({
-        text: '...',
-        x: 1420, y: startY + (i * spacing) + 28,
-        style: 'white',
-        align: 'right'
-      })
-      valueTexts.push(val)
-      jsmaf.root.children.push(val)
-    } else {
-      valueTexts.push(null)
-    }
   }
 
   updateHighlight()

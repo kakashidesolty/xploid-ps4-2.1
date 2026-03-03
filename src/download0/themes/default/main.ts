@@ -3,19 +3,17 @@ import { lang } from 'download0/languages'
 (function () {
   include('languages.js')
   
-  // Limpieza estándar
   jsmaf.root.children.length = 0
   
-  // Estilos (Aseguran que las letras se vean)
+  // Estilos con nombres estándar para que siempre se vean
   new Style({ name: 'white', color: 'white', size: 26, shadowColor: 'black', shadowBlur: 4 })
   new Style({ name: 'gold_ui', color: '#FFD700', size: 28, shadowColor: 'orange', shadowBlur: 8, weight: 'bold' })
   new Style({ name: 'title', color: 'white', size: 36, shadowColor: 'black', shadowBlur: 5 })
 
-  // Fondo a pantalla completa SEGURO (Sin números negativos)
+  // Fondo con tus coordenadas originales (Las que SI te funcionaban)
   const background = new Image({
     url: 'file:///../download0/img/multiview_bg_VAF.png',
-    x: 0, y: 0, 
-    width: 1920, height: 1080
+    x: 0, y: 0, width: 1920, height: 1080
   })
   jsmaf.root.children.push(background)
 
@@ -30,19 +28,18 @@ import { lang } from 'download0/languages'
     { label: lang.exit, script: 'includes/kill_vue.js' }
   ]
 
-  const title = new jsmaf.Text({
+  jsmaf.root.children.push(new jsmaf.Text({
     text: 'PS4 11.00 - GOLD EDITION',
     x: 960, y: 150,
     style: 'title',
     align: 'center'
-  })
-  jsmaf.root.children.push(title)
+  }))
 
   function updateHighlight() {
     for (let i = 0; i < buttons.length; i++) {
       if (i === currentButton) {
         buttons[i].opacity = 1.0
-        buttons[i].borderColor = '#FFD700' // El marco dorado
+        buttons[i].borderColor = '#FFD700' 
         buttons[i].borderWidth = 4
         buttonTexts[i].style = 'gold_ui'
       } else {
@@ -86,10 +83,10 @@ import { lang } from 'download0/languages'
       currentButton = (currentButton - 1 + buttons.length) % buttons.length
       updateHighlight()
     } else if (keyCode === confirmKey) {
-      const selected = menuOptions[currentButton]
-      if (selected.script === 'loader.js') include('loader.js')
-      else if (selected.script === 'config_ui.js') include('config_ui.js')
-      else include('themes/default/' + selected.script)
+      const sel = menuOptions[currentButton].script
+      if (sel === 'loader.js') include('loader.js')
+      else if (sel === 'config_ui.js') include('config_ui.js')
+      else include('themes/default/' + sel)
     }
   }
 })()
