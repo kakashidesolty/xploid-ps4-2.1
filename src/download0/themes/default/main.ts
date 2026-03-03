@@ -47,6 +47,7 @@ import { fn, BigInt } from 'download0/types'
   })
   jsmaf.root.children.push(logo)
 
+  // Lista de opciones (Música eliminada)
   const menuOptions = [
     { label: lang.jailbreak, script: 'loader.js', imgKey: 'jailbreak' },
     { label: lang.payloadMenu, script: 'payload_host.js', imgKey: 'payloadMenu' },
@@ -225,7 +226,6 @@ import { fn, BigInt } from 'download0/types'
   }
 
   function updateHighlight () {
-    // Animate out the previous button
     const prevButtonObj = buttons[prevButton]
     const buttonMarker = buttonMarkers[prevButton]
     if (prevButton >= 0 && prevButton !== currentButton && prevButtonObj && buttonMarker) {
@@ -237,7 +237,6 @@ import { fn, BigInt } from 'download0/types'
       animateZoomOut(prevButtonObj, buttonTexts[prevButton]!, buttonOrigPos[prevButton]!.x, buttonOrigPos[prevButton]!.y, textOrigPos[prevButton]!.x, textOrigPos[prevButton]!.y)
     }
 
-    // Set styles for all buttons
     for (let i = 0; i < buttons.length; i++) {
       const button = buttons[i]
       const buttonMarker = buttonMarkers[i]
@@ -245,11 +244,14 @@ import { fn, BigInt } from 'download0/types'
       const buttonOrigPos_ = buttonOrigPos[i]
       const textOrigPos_ = textOrigPos[i]
       if (button === undefined || buttonText === undefined || buttonOrigPos_ === undefined || textOrigPos_ === undefined || buttonMarker === undefined) continue
+      
       if (i === currentButton) {
         button.url = selectedButtonImg
         button.alpha = 1.0
-        button.borderColor = 'rgb(100,180,255)'
-        button.borderWidth = 3
+        // --- CAMBIO A DORADO AQUÍ ---
+        button.borderColor = '#FFD700' 
+        button.borderWidth = 5 
+        // ----------------------------
         buttonMarker.visible = true
         animateZoomIn(button, buttonText, buttonOrigPos_.x, buttonOrigPos_.y, textOrigPos_.x, textOrigPos_.y)
       } else if (i !== prevButton) {
