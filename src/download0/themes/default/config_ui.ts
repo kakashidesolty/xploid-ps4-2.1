@@ -50,7 +50,7 @@ if (typeof lang === 'undefined') {
     autolapse: false,
     autopoop: false,
     autoclose: false,
-    music: true,
+    music: false,
     jb_behavior: 0,
     theme: 'default'
   }
@@ -60,23 +60,28 @@ if (typeof lang === 'undefined') {
   const labelTexts: jsmaf.Text[] = []
   const valueTexts: jsmaf.Text[] = []
 
-  // Estilos mejorados para mayor estética
-  new Style({ name: 'white_config', color: 'white', size: 26, shadowColor: 'black', shadowBlur: 4 })
-  new Style({ name: 'gold_config', color: '#FFD700', size: 28, shadowColor: 'orange', shadowBlur: 8 })
-  new Style({ name: 'title_config', color: 'white', size: 36, shadowColor: 'black', shadowBlur: 5 })
-
+  // --- SOLUCIÓN DE LETRAS Y PANTALLA ---
   jsmaf.root.children.length = 0
+  jsmaf.root.width = 1920
+  jsmaf.root.height = 1080
 
+  // Definir estilos con nombres estándar para que la PS4 no se confunda
+  new Style({ name: 'white', color: 'white', size: 26, shadowColor: 'black', shadowBlur: 4 })
+  new Style({ name: 'gold_ui', color: '#FFD700', size: 28, shadowColor: 'orange', shadowBlur: 8, weight: 'bold' })
+  new Style({ name: 'title', color: 'white', size: 36, shadowColor: 'black', shadowBlur: 5 })
+
+  // Fondo con ajuste de pantalla completa (Zoom 1.01)
   const background = new Image({
     url: 'file:///../download0/img/multiview_bg_VAF.png',
-    x: 0, y: 0, width: 1920, height: 1080
+    x: -10, y: -10, width: 1940, height: 1100, // Ligeramente más grande
+    scaleX: 1.01, scaleY: 1.01
   })
   jsmaf.root.children.push(background)
 
   const title = new jsmaf.Text({
     text: lang.config,
     x: 960, y: 150,
-    style: 'title_config',
+    style: 'title',
     align: 'center'
   })
   jsmaf.root.children.push(title)
@@ -84,34 +89,31 @@ if (typeof lang === 'undefined') {
   function updateValueText (index: number) {
     const opt = configOptions[index]!
     if (opt.type === 'action') return
-
     let valStr = ''
-    if (opt.type === 'bool') {
-      valStr = currentConfig[opt.key] ? 'ON' : 'OFF'
-    } else if (opt.type === 'list') {
-      valStr = opt.options[currentConfig[opt.key]]
-    } else if (opt.type === 'string') {
-      valStr = currentConfig[opt.key]
-    }
+    if (opt.type === 'bool') valStr = currentConfig[opt.key] ? 'ON' : 'OFF'
+    else if (opt.type === 'list') valStr = opt.options[currentConfig[opt.key]]
+    else if (opt.type === 'string') valStr = currentConfig[opt.key]
     valueTexts[index]!.text = valStr
   }
 
   function updateHighlight () {
     for (let i = 0; i < buttons.length; i++) {
       if (i === currentButton) {
-        // EFECTO DORADO SELECCIONADO (Sin usar imágenes nuevas)
         buttons[i].opacity = 1.0
-        buttons[i].scaleX = 1.05
-        buttons[i].scaleY = 1.05
-        labelTexts[i].style = 'gold_config'
-        if (valueTexts[i]) valueTexts[i].style = 'gold_config'
+        buttons[i].scaleX = 1.03
+        buttons[i].scaleY = 1.03
+        buttons[i].borderColor = '#FFD700' 
+        buttons[i].borderWidth = 4
+        labelTexts[i].style = 'gold_ui'
+        if (valueTexts[i]) valueTexts[i].style = 'gold_ui'
       } else {
-        // Estado normal
-        buttons[i].opacity = 0.6
+        buttons[i].opacity = 0.7
         buttons[i].scaleX = 1.0
         buttons[i].scaleY = 1.0
-        labelTexts[i].style = 'white_config'
-        if (valueTexts[i]) valueTexts[i].style = 'white_config'
+        buttons[i].borderColor = 'transparent'
+        buttons[i].borderWidth = 0
+        labelTexts[i].style = 'white'
+        if (valueTexts[i]) valueTexts[i].style = 'white'
       }
     }
   }
@@ -124,23 +126,21 @@ if (typeof lang === 'undefined') {
 
   function createUI () {
     const startY = 300
-    const spacing = 120
-
+    const spacing = 110 
     for (let i = 0; i < configOptions.length; i++) {
       const opt = configOptions[i]!
-      
       const btn = new Image({
-        url: 'file:///assets/img/button_over_9.png', // Usamos la existente
+        url: 'file:///assets/img/button_over_9.png',
         x: 460, y: startY + (i * spacing),
-        width: 1000, height: 80
+        width: 1000, height: 85
       })
       buttons.push(btn)
       jsmaf.root.children.push(btn)
 
       const label = new jsmaf.Text({
         text: opt.label,
-        x: 500, y: startY + (i * spacing) + 25,
-        style: 'white_config'
+        x: 500, y: startY + (i * spacing) + 28,
+        style: 'white'
       })
       labelTexts.push(label)
       jsmaf.root.children.push(label)
@@ -148,15 +148,15 @@ if (typeof lang === 'undefined') {
       if (opt.type !== 'action') {
         const val = new jsmaf.Text({
           text: '',
-          x: 1420, y: startY + (i * spacing) + 25,
-          style: 'white_config',
+          x: 1420, y: startY + (i * spacing) + 28,
+          style: 'white',
           align: 'right'
         })
         valueTexts.push(val)
         jsmaf.root.children.push(val)
         updateValueText(i)
       } else {
-        valueTexts.push(null as any)
+        valueTexts[index] = null as any
       }
     }
     updateHighlight()
@@ -170,48 +170,31 @@ if (typeof lang === 'undefined') {
       } catch (e) {}
     }
     createUI()
-    log(lang.configLoaded)
   })
 
-  function handleAction () {
-    const opt = configOptions[currentButton]!
-    if (opt.key === 'back') {
-      const theme = currentConfig.theme || 'default'
-      include('themes/' + theme + '/main.js')
-      return
-    }
-
-    if (opt.type === 'bool') {
-      const key = opt.key
-      currentConfig[key] = !currentConfig[key]
-      
-      // Lógica de exclusión mutua autolapse/autopoop
-      if (key === 'autolapse' && currentConfig.autolapse) {
-        currentConfig.autopoop = false
-      } else if (key === 'autopoop' && currentConfig.autopoop) {
-        currentConfig.autolapse = false
-      }
-      
-      for(let j=0; j<configOptions.length; j++) updateValueText(j)
-      saveConfig()
-    } else if (opt.type === 'list') {
-      currentConfig[opt.key] = (currentConfig[opt.key] + 1) % opt.options.length
-      updateValueText(currentButton)
-      saveConfig()
-    }
-  }
-
   const confirmKey = jsmaf.circleIsAdvanceButton ? 13 : 14
-  
   jsmaf.onKeyDown = function (keyCode) {
-    if (keyCode === 6 || keyCode === 5) { // Down
+    if (keyCode === 6 || keyCode === 5) {
       currentButton = (currentButton + 1) % buttons.length
       updateHighlight()
-    } else if (keyCode === 4 || keyCode === 7) { // Up
+    } else if (keyCode === 4 || keyCode === 7) {
       currentButton = (currentButton - 1 + buttons.length) % buttons.length
       updateHighlight()
     } else if (keyCode === confirmKey) {
-      handleAction()
+      const opt = configOptions[currentButton]!
+      if (opt.key === 'back') {
+        include('themes/' + (currentConfig.theme || 'default') + '/main.js')
+      } else if (opt.type === 'bool') {
+        currentConfig[opt.key] = !currentConfig[opt.key]
+        if (opt.key === 'autolapse' && currentConfig.autolapse) currentConfig.autopoop = false
+        else if (opt.key === 'autopoop' && currentConfig.autopoop) currentConfig.autolapse = false
+        for(let j=0; j<configOptions.length; j++) updateValueText(j)
+        saveConfig()
+      } else if (opt.type === 'list') {
+        currentConfig[opt.key] = (currentConfig[opt.key] + 1) % opt.options.length
+        updateValueText(currentButton)
+        saveConfig()
+      }
     }
   }
 })()
