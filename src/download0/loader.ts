@@ -31,7 +31,7 @@ export function show_success (immediate?: boolean) {
   }
 }
 
-// MÚSICA DESHABILITADA COMPLETAMENTE
+// MÚSICA TOTALMENTE DESHABILITADA
 /*
 if (typeof startBgmIfEnabled === 'function') {
   startBgmIfEnabled()
@@ -128,7 +128,7 @@ if (!is_jailbroken) {
     while (!is_exploit_complete()) {
       const elapsed = Date.now() - start_time
       if (elapsed > max_wait_ms) {
-        log('ERROR: Timeout waiting for exploit to complete')
+        log('ERROR: Timeout waiting for exploit to complete (' + max_wait_seconds + ' seconds)')
         throw new Error('Lapse failed! restart and try again...')
       }
       const poll_start = Date.now()
@@ -155,6 +155,7 @@ export function run_binloader () {
   log('Initializing binloader...')
   try {
     binloader_init()
+    log('Binloader initialized and running!')
   } catch (e) {
     throw e
   }

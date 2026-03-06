@@ -18,15 +18,24 @@ import { fn, BigInt } from 'download0/types'
 
   jsmaf.root.children.length = 0
 
-  // ESTILOS SEGUROS
   new Style({ name: 'white', color: 'white', size: 24 })
-  new Style({ name: 'gold_ui', color: '#FFD700', size: 26, weight: 'bold', shadowColor: 'rgba(0,0,0,0.8)', shadowBlur: 4 })
   new Style({ name: 'title', color: 'white', size: 32 })
+  // ESTILO DORADO AÑADIDO
+  new Style({ name: 'gold_ui', color: '#FFD700', size: 26, weight: 'bold', shadowColor: 'rgba(0,0,0,0.8)', shadowBlur: 4 })
 
-  // FONDO PRINCIPAL SEGURO
+  // MÚSICA ELIMINADA DEL MAIN
+  /*
+  if (typeof startBgmIfEnabled === 'function') {
+    startBgmIfEnabled()
+  }
+  */
+
   const background = new Image({
     url: 'file:///../download0/img/multiview_bg_VAF.png',
-    x: 0, y: 0, width: 1920, height: 1080
+    x: 0,
+    y: 0,
+    width: 1920,
+    height: 1080
   })
   jsmaf.root.children.push(background)
 
@@ -60,21 +69,34 @@ import { fn, BigInt } from 'download0/types'
 
     const button = new Image({
       url: normalButtonImg,
-      x: btnX, y: btnY, width: buttonWidth, height: buttonHeight
+      x: btnX,
+      y: btnY,
+      width: buttonWidth,
+      height: buttonHeight
     })
     buttons.push(button)
     jsmaf.root.children.push(button)
 
     const marker = new Image({
       url: 'file:///assets/img/ad_pod_marker.png',
-      x: btnX + buttonWidth - 50, y: btnY + 35, width: 12, height: 12, visible: false
+      x: btnX + buttonWidth - 50,
+      y: btnY + 35,
+      width: 12,
+      height: 12,
+      visible: false
     })
     buttonMarkers.push(marker)
     jsmaf.root.children.push(marker)
 
     let btnText: Image | jsmaf.Text
     if (useImageText) {
-      btnText = new Image({ url: textImageBase + menuOptions[i]!.imgKey + '.png', x: btnX + 20, y: btnY + 15, width: 300, height: 50 })
+      btnText = new Image({
+        url: textImageBase + menuOptions[i]!.imgKey + '.png',
+        x: btnX + 20,
+        y: btnY + 15,
+        width: 300,
+        height: 50
+      })
     } else {
       btnText = new jsmaf.Text()
       btnText.text = menuOptions[i]!.label
@@ -82,7 +104,7 @@ import { fn, BigInt } from 'download0/types'
       btnText.y = btnY + buttonHeight / 2 - 12
       btnText.style = 'white'
     }
-    buttonTexts.push(btnText)
+    buttonTexts.push(btnText as jsmaf.Text)
     jsmaf.root.children.push(btnText)
 
     buttonOrigPos.push({ x: btnX, y: btnY })
@@ -92,17 +114,36 @@ import { fn, BigInt } from 'download0/types'
   const exitX = centerX - buttonWidth / 2
   const exitY = startY + menuOptions.length * buttonSpacing + 100
 
-  const exitButton = new Image({ url: normalButtonImg, x: exitX, y: exitY, width: buttonWidth, height: buttonHeight })
+  const exitButton = new Image({
+    url: normalButtonImg,
+    x: exitX,
+    y: exitY,
+    width: buttonWidth,
+    height: buttonHeight
+  })
   buttons.push(exitButton)
   jsmaf.root.children.push(exitButton)
 
-  const exitMarker = new Image({ url: 'file:///assets/img/ad_pod_marker.png', x: exitX + buttonWidth - 50, y: exitY + 35, width: 12, height: 12, visible: false })
+  const exitMarker = new Image({
+    url: 'file:///assets/img/ad_pod_marker.png',
+    x: exitX + buttonWidth - 50,
+    y: exitY + 35,
+    width: 12,
+    height: 12,
+    visible: false
+  })
   buttonMarkers.push(exitMarker)
   jsmaf.root.children.push(exitMarker)
 
   let exitText: Image | jsmaf.Text
   if (useImageText) {
-    exitText = new Image({ url: textImageBase + 'exit.png', x: exitX + 20, y: exitY + 15, width: 300, height: 50 })
+    exitText = new Image({
+      url: textImageBase + 'exit.png',
+      x: exitX + 20,
+      y: exitY + 15,
+      width: 300,
+      height: 50
+    })
   } else {
     exitText = new jsmaf.Text()
     exitText.text = lang.exit
@@ -110,7 +151,7 @@ import { fn, BigInt } from 'download0/types'
     exitText.y = exitY + buttonHeight / 2 - 12
     exitText.style = 'white'
   }
-  buttonTexts.push(exitText)
+  buttonTexts.push(exitText as jsmaf.Text)
   jsmaf.root.children.push(exitText)
 
   buttonOrigPos.push({ x: exitX, y: exitY })
@@ -120,38 +161,72 @@ import { fn, BigInt } from 'download0/types'
   let zoomOutInterval: number | null = null
   let prevButton = -1
 
-  function easeInOut (t: number) { return (1 - Math.cos(t * Math.PI)) / 2 }
+  function easeInOut (t: number) {
+    return (1 - Math.cos(t * Math.PI)) / 2
+  }
 
   function animateZoomIn (btn: Image, text: jsmaf.Text, btnOrigX: number, btnOrigY: number, textOrigX: number, textOrigY: number) {
     if (zoomInInterval) jsmaf.clearInterval(zoomInInterval)
-    const btnW = buttonWidth, btnH = buttonHeight, startScale = btn.scaleX || 1.0, endScale = 1.1, duration = 175
+    const btnW = buttonWidth
+    const btnH = buttonHeight
+    const startScale = btn.scaleX || 1.0
+    const endScale = 1.1
+    const duration = 175
     let elapsed = 0
+    const step = 16
+
     zoomInInterval = jsmaf.setInterval(function () {
-      elapsed += 16
+      elapsed += step
       const t = Math.min(elapsed / duration, 1)
-      const scale = startScale + (endScale - startScale) * easeInOut(t)
-      btn.scaleX = scale; btn.scaleY = scale
-      btn.x = btnOrigX - (btnW * (scale - 1)) / 2; btn.y = btnOrigY - (btnH * (scale - 1)) / 2
-      text.scaleX = scale; text.scaleY = scale
-      text.x = textOrigX - (btnW * (scale - 1)) / 2; text.y = textOrigY - (btnH * (scale - 1)) / 2
-      if (t >= 1 && zoomInInterval) { jsmaf.clearInterval(zoomInInterval); zoomInInterval = null }
-    }, 16)
+      const eased = easeInOut(t)
+      const scale = startScale + (endScale - startScale) * eased
+
+      btn.scaleX = scale
+      btn.scaleY = scale
+      btn.x = btnOrigX - (btnW * (scale - 1)) / 2
+      btn.y = btnOrigY - (btnH * (scale - 1)) / 2
+      text.scaleX = scale
+      text.scaleY = scale
+      text.x = textOrigX - (btnW * (scale - 1)) / 2
+      text.y = textOrigY - (btnH * (scale - 1)) / 2
+
+      if (t >= 1 && zoomInInterval) {
+        jsmaf.clearInterval(zoomInInterval)
+        zoomInInterval = null
+      }
+    }, step)
   }
 
   function animateZoomOut (btn: Image, text: jsmaf.Text, btnOrigX: number, btnOrigY: number, textOrigX: number, textOrigY: number) {
     if (zoomOutInterval) jsmaf.clearInterval(zoomOutInterval)
-    const btnW = buttonWidth, btnH = buttonHeight, startScale = btn.scaleX || 1.1, endScale = 1.0, duration = 175
+    const btnW = buttonWidth
+    const btnH = buttonHeight
+    const startScale = btn.scaleX || 1.1
+    const endScale = 1.0
+    const duration = 175
     let elapsed = 0
+    const step = 16
+
     zoomOutInterval = jsmaf.setInterval(function () {
-      elapsed += 16
+      elapsed += step
       const t = Math.min(elapsed / duration, 1)
-      const scale = startScale + (endScale - startScale) * easeInOut(t)
-      btn.scaleX = scale; btn.scaleY = scale
-      btn.x = btnOrigX - (btnW * (scale - 1)) / 2; btn.y = btnOrigY - (btnH * (scale - 1)) / 2
-      text.scaleX = scale; text.scaleY = scale
-      text.x = textOrigX - (btnW * (scale - 1)) / 2; text.y = textOrigY - (btnH * (scale - 1)) / 2
-      if (t >= 1 && zoomOutInterval) { jsmaf.clearInterval(zoomOutInterval); zoomOutInterval = null }
-    }, 16)
+      const eased = easeInOut(t)
+      const scale = startScale + (endScale - startScale) * eased
+
+      btn.scaleX = scale
+      btn.scaleY = scale
+      btn.x = btnOrigX - (btnW * (scale - 1)) / 2
+      btn.y = btnOrigY - (btnH * (scale - 1)) / 2
+      text.scaleX = scale
+      text.scaleY = scale
+      text.x = textOrigX - (btnW * (scale - 1)) / 2
+      text.y = textOrigY - (btnH * (scale - 1)) / 2
+
+      if (t >= 1 && zoomOutInterval) {
+        jsmaf.clearInterval(zoomOutInterval)
+        zoomOutInterval = null
+      }
+    }, step)
   }
 
   function updateHighlight () {
@@ -163,18 +238,22 @@ import { fn, BigInt } from 'download0/types'
       prevButtonObj.borderColor = 'transparent'
       prevButtonObj.borderWidth = 0
       buttonMarker.visible = false
-      if (!useImageText) buttonTexts[prevButton]!.style = 'white'
+      if (!useImageText && buttonTexts[prevButton]) buttonTexts[prevButton]!.style = 'white'
       animateZoomOut(prevButtonObj, buttonTexts[prevButton]!, buttonOrigPos[prevButton]!.x, buttonOrigPos[prevButton]!.y, textOrigPos[prevButton]!.x, textOrigPos[prevButton]!.y)
     }
 
     for (let i = 0; i < buttons.length; i++) {
-      const button = buttons[i], buttonMarker = buttonMarkers[i], buttonText = buttonTexts[i], buttonOrigPos_ = buttonOrigPos[i], textOrigPos_ = textOrigPos[i]
+      const button = buttons[i]
+      const buttonMarker = buttonMarkers[i]
+      const buttonText = buttonTexts[i]
+      const buttonOrigPos_ = buttonOrigPos[i]
+      const textOrigPos_ = textOrigPos[i]
       if (button === undefined || buttonText === undefined || buttonOrigPos_ === undefined || textOrigPos_ === undefined || buttonMarker === undefined) continue
       
       if (i === currentButton) {
         button.url = selectedButtonImg
         button.alpha = 1.0
-        // ESTILO DORADO AQUI
+        // ESTILO DORADO EXACTO
         button.borderColor = '#FFD700'
         button.borderWidth = 4
         buttonMarker.visible = true
@@ -185,14 +264,19 @@ import { fn, BigInt } from 'download0/types'
         button.alpha = 0.7
         button.borderColor = 'transparent'
         button.borderWidth = 0
-        button.scaleX = 1.0; button.scaleY = 1.0
-        button.x = buttonOrigPos_.x; button.y = buttonOrigPos_.y
-        buttonText.scaleX = 1.0; buttonText.scaleY = 1.0
-        buttonText.x = textOrigPos_.x; buttonText.y = textOrigPos_.y
+        button.scaleX = 1.0
+        button.scaleY = 1.0
+        button.x = buttonOrigPos_.x
+        button.y = buttonOrigPos_.y
+        buttonText.scaleX = 1.0
+        buttonText.scaleY = 1.0
+        buttonText.x = textOrigPos_.x
+        buttonText.y = textOrigPos_.y
         buttonMarker.visible = false
         if (!useImageText) buttonText.style = 'white'
       }
     }
+
     prevButton = currentButton
   }
 
@@ -202,19 +286,36 @@ import { fn, BigInt } from 'download0/types'
     } else if (currentButton < menuOptions.length) {
       const selectedOption = menuOptions[currentButton]
       if (!selectedOption) return
-      if (selectedOption.script === 'loader.js') { jsmaf.onKeyDown = function () {} }
+      if (selectedOption.script === 'loader.js') {
+        jsmaf.onKeyDown = function () {}
+      }
+      log('Loading ' + selectedOption.script + '...')
       try {
-        if (selectedOption.script.includes('loader.js')) { include(selectedOption.script) }
-        else { include('themes/' + (typeof CONFIG !== 'undefined' && CONFIG.theme ? CONFIG.theme : 'default') + '/' + selectedOption.script) }
-      } catch (e) {}
+        if (selectedOption.script.includes('loader.js')) {
+          include(selectedOption.script)
+        } else {
+          include('themes/' + (typeof CONFIG !== 'undefined' && CONFIG.theme ? CONFIG.theme : 'default') + '/' + selectedOption.script)
+        }
+      } catch (e) {
+        log('ERROR loading ' + selectedOption.script + ': ' + (e as Error).message)
+        if ((e as Error).stack) log((e as Error).stack!)
+      }
     }
   }
 
   jsmaf.onKeyDown = function (keyCode) {
-    if (keyCode === 6 || keyCode === 5) { currentButton = (currentButton + 1) % buttons.length; updateHighlight() }
-    else if (keyCode === 4 || keyCode === 7) { currentButton = (currentButton - 1 + buttons.length) % buttons.length; updateHighlight() }
-    else if (keyCode === 14) { handleButtonPress() }
+    if (keyCode === 6 || keyCode === 5) {
+      currentButton = (currentButton + 1) % buttons.length
+      updateHighlight()
+    } else if (keyCode === 4 || keyCode === 7) {
+      currentButton = (currentButton - 1 + buttons.length) % buttons.length
+      updateHighlight()
+    } else if (keyCode === 14) {
+      handleButtonPress()
+    }
   }
 
   updateHighlight()
+
+  log(lang.mainMenuLoaded)
 })()
