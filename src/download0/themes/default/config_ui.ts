@@ -512,7 +512,7 @@ if (typeof lang === 'undefined') {
         }
       } catch (e) {
         log('ERROR: Failed to parse config: ' + (e as Error).message)
-        configLoaded = true 
+        configLoaded = true
       }
     })
   }

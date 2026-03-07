@@ -246,7 +246,7 @@ import { fn, BigInt } from 'download0/types'
       const buttonOrigPos_ = buttonOrigPos[i]
       const textOrigPos_ = textOrigPos[i]
       if (button === undefined || buttonText === undefined || buttonOrigPos_ === undefined || textOrigPos_ === undefined || buttonMarker === undefined) continue
-      
+
       if (i === currentButton) {
         button.url = selectedButtonImg
         button.alpha = 1.0
