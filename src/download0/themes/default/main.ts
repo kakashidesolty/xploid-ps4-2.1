@@ -99,7 +99,7 @@ import { fn, BigInt } from 'download0/types'
       btnText.y = btnY + buttonHeight / 2 - 12
       btnText.style = 'white'
     }
-    buttonTexts.push(btnText)
+    buttonTexts.push(btnText as jsmaf.Text)
     jsmaf.root.children.push(btnText)
 
     buttonOrigPos.push({ x: btnX, y: btnY })
@@ -146,7 +146,7 @@ import { fn, BigInt } from 'download0/types'
     exitText.y = exitY + buttonHeight / 2 - 12
     exitText.style = 'white'
   }
-  buttonTexts.push(exitText)
+  buttonTexts.push(exitText as jsmaf.Text)
   jsmaf.root.children.push(exitText)
 
   buttonOrigPos.push({ x: exitX, y: exitY })
@@ -225,7 +225,6 @@ import { fn, BigInt } from 'download0/types'
   }
 
   function updateHighlight () {
-    // Animate out the previous button
     const prevButtonObj = buttons[prevButton]
     const buttonMarker = buttonMarkers[prevButton]
     if (prevButton >= 0 && prevButton !== currentButton && prevButtonObj && buttonMarker) {
@@ -237,7 +236,6 @@ import { fn, BigInt } from 'download0/types'
       animateZoomOut(prevButtonObj, buttonTexts[prevButton]!, buttonOrigPos[prevButton]!.x, buttonOrigPos[prevButton]!.y, textOrigPos[prevButton]!.x, textOrigPos[prevButton]!.y)
     }
 
-    // Set styles for all buttons
     for (let i = 0; i < buttons.length; i++) {
       const button = buttons[i]
       const buttonMarker = buttonMarkers[i]
@@ -245,11 +243,13 @@ import { fn, BigInt } from 'download0/types'
       const buttonOrigPos_ = buttonOrigPos[i]
       const textOrigPos_ = textOrigPos[i]
       if (button === undefined || buttonText === undefined || buttonOrigPos_ === undefined || textOrigPos_ === undefined || buttonMarker === undefined) continue
+      
       if (i === currentButton) {
         button.url = selectedButtonImg
         button.alpha = 1.0
-        button.borderColor = 'rgb(100,180,255)'
-        button.borderWidth = 3
+        // --- AQUÍ EL CAMBIO A DORADO NATIVO ---
+        button.borderColor = 'rgb(255, 215, 0)'
+        button.borderWidth = 4
         buttonMarker.visible = true
         animateZoomIn(button, buttonText, buttonOrigPos_.x, buttonOrigPos_.y, textOrigPos_.x, textOrigPos_.y)
       } else if (i !== prevButton) {
