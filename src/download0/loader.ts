@@ -10,6 +10,8 @@ if (jsmaf.loader_has_run) {
 }
 jsmaf.loader_has_run = true
 
+// Now load userland and lapse
+// Check if libc_addr is defined
 if (typeof libc_addr === 'undefined') {
   include('userland.js')
 }
@@ -31,28 +33,29 @@ export function show_success (immediate?: boolean) {
   }
 }
 
-// MÚSICA TOTALMENTE DESHABILITADA
-/*
 if (typeof startBgmIfEnabled === 'function') {
   startBgmIfEnabled()
 }
-*/
 
 const is_jailbroken = checkJailbroken()
 const themeFolder = (typeof CONFIG !== 'undefined' && typeof CONFIG.theme === 'string') ? CONFIG.theme : 'default'
 
+// Check if exploit has completed successfully
 function is_exploit_complete () {
+  // Check if we're actually jailbroken
   fn.register(24, 'getuid', [], 'bigint')
   fn.register(585, 'is_in_sandbox', [], 'bigint')
   try {
     const uid = fn.getuid()
     const sandbox = fn.is_in_sandbox()
+    // Should be root (uid=0) and not sandboxed (0)
     if (!uid.eq(0) || !sandbox.eq(0)) {
       return false
     }
   } catch (e) {
     return false
   }
+
   return true
 }
 
@@ -73,11 +76,13 @@ function get_fwversion () {
   const size = malloc(0x8)
   write64(size, 0x8)
   if (sysctlbyname('kern.sdk_version', buf, size, 0, 0)) {
-    const byte1 = Number(read8(buf.add(2)))
-    const byte2 = Number(read8(buf.add(3)))
+    const byte1 = Number(read8(buf.add(2)))  // Minor version (first byte)
+    const byte2 = Number(read8(buf.add(3)))  // Major version (second byte)
+
     const version = byte2.toString(16) + '.' + byte1.toString(16).padStart(2, '0')
     return version
   }
+
   return null
 }
 
@@ -100,7 +105,9 @@ const compare_version = (a: string, b: string) => {
 
 if (!is_jailbroken) {
   const jb_behavior = (typeof CONFIG !== 'undefined' && typeof CONFIG.jb_behavior === 'number') ? CONFIG.jb_behavior : 0
+
   utils.notify(FW_VERSION + ' Detected!')
+
   let use_lapse = false
 
   if (jb_behavior === 1) {
@@ -120,6 +127,7 @@ if (!is_jailbroken) {
     }
   }
 
+  // Only wait for lapse - netctrl handles its own completion
   if (use_lapse) {
     const start_time = Date.now()
     const max_wait_seconds = 5
@@ -127,36 +135,55 @@ if (!is_jailbroken) {
 
     while (!is_exploit_complete()) {
       const elapsed = Date.now() - start_time
+
       if (elapsed > max_wait_ms) {
         log('ERROR: Timeout waiting for exploit to complete (' + max_wait_seconds + ' seconds)')
         throw new Error('Lapse failed! restart and try again...')
       }
+
+      // Poll every 500ms
       const poll_start = Date.now()
-      while (Date.now() - poll_start < 500) {}
+      while (Date.now() - poll_start < 500) {
+        // Busy wait
+      }
     }
     const total_wait = ((Date.now() - start_time) / 1000).toFixed(1)
     log('Exploit completed successfully after ' + total_wait + ' seconds')
   }
   if (use_lapse) {
     log('Initializing binloader...')
+
     try {
       binloader_init()
       log('Binloader initialized and running!')
     } catch (e) {
+      log('ERROR: Failed to initialize binloader')
+      log('Error message: ' + (e as Error).message)
+      log('Error name: ' + (e as Error).name)
+      if ((e as Error).stack) {
+        log('Stack trace: ' + (e as Error).stack)
+      }
       throw e
     }
   }
 } else {
   utils.notify('Already Jailbroken!')
-  try { include('themes/' + themeFolder + '/main.js') } catch (e) {}
+  try { include('themes/' + themeFolder + '/main.js') } catch (e) { /* escaped sandbox */ }
 }
 
 export function run_binloader () {
   log('Initializing binloader...')
+
   try {
     binloader_init()
     log('Binloader initialized and running!')
   } catch (e) {
+    log('ERROR: Failed to initialize binloader')
+    log('Error message: ' + (e as Error).message)
+    log('Error name: ' + (e as Error).name)
+    if ((e as Error).stack) {
+      log('Stack trace: ' + (e as Error).stack)
+    }
     throw e
   }
 }

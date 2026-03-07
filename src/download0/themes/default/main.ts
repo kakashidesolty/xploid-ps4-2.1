@@ -20,15 +20,12 @@ import { fn, BigInt } from 'download0/types'
 
   new Style({ name: 'white', color: 'white', size: 24 })
   new Style({ name: 'title', color: 'white', size: 32 })
-  // ESTILO DORADO AÑADIDO
+  // AÑADIMOS EL ESTILO DORADO
   new Style({ name: 'gold_ui', color: '#FFD700', size: 26, weight: 'bold', shadowColor: 'rgba(0,0,0,0.8)', shadowBlur: 4 })
 
-  // MÚSICA ELIMINADA DEL MAIN
-  /*
   if (typeof startBgmIfEnabled === 'function') {
     startBgmIfEnabled()
   }
-  */
 
   const background = new Image({
     url: 'file:///../download0/img/multiview_bg_VAF.png',
@@ -253,7 +250,7 @@ import { fn, BigInt } from 'download0/types'
       if (i === currentButton) {
         button.url = selectedButtonImg
         button.alpha = 1.0
-        // ESTILO DORADO EXACTO
+        // MARCO DORADO APLICADO
         button.borderColor = '#FFD700'
         button.borderWidth = 4
         buttonMarker.visible = true
