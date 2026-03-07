@@ -20,8 +20,6 @@ import { fn, BigInt } from 'download0/types'
 
   new Style({ name: 'white', color: 'white', size: 24 })
   new Style({ name: 'title', color: 'white', size: 32 })
-  // AÑADIMOS EL ESTILO DORADO
-  new Style({ name: 'gold_ui', color: '#FFD700', size: 26, weight: 'bold', shadowColor: 'rgba(0,0,0,0.8)', shadowBlur: 4 })
 
   if (typeof startBgmIfEnabled === 'function') {
     startBgmIfEnabled()
@@ -101,7 +99,7 @@ import { fn, BigInt } from 'download0/types'
       btnText.y = btnY + buttonHeight / 2 - 12
       btnText.style = 'white'
     }
-    buttonTexts.push(btnText as jsmaf.Text)
+    buttonTexts.push(btnText)
     jsmaf.root.children.push(btnText)
 
     buttonOrigPos.push({ x: btnX, y: btnY })
@@ -148,7 +146,7 @@ import { fn, BigInt } from 'download0/types'
     exitText.y = exitY + buttonHeight / 2 - 12
     exitText.style = 'white'
   }
-  buttonTexts.push(exitText as jsmaf.Text)
+  buttonTexts.push(exitText)
   jsmaf.root.children.push(exitText)
 
   buttonOrigPos.push({ x: exitX, y: exitY })
@@ -227,6 +225,7 @@ import { fn, BigInt } from 'download0/types'
   }
 
   function updateHighlight () {
+    // Animate out the previous button
     const prevButtonObj = buttons[prevButton]
     const buttonMarker = buttonMarkers[prevButton]
     if (prevButton >= 0 && prevButton !== currentButton && prevButtonObj && buttonMarker) {
@@ -235,10 +234,10 @@ import { fn, BigInt } from 'download0/types'
       prevButtonObj.borderColor = 'transparent'
       prevButtonObj.borderWidth = 0
       buttonMarker.visible = false
-      if (!useImageText && buttonTexts[prevButton]) buttonTexts[prevButton]!.style = 'white'
       animateZoomOut(prevButtonObj, buttonTexts[prevButton]!, buttonOrigPos[prevButton]!.x, buttonOrigPos[prevButton]!.y, textOrigPos[prevButton]!.x, textOrigPos[prevButton]!.y)
     }
 
+    // Set styles for all buttons
     for (let i = 0; i < buttons.length; i++) {
       const button = buttons[i]
       const buttonMarker = buttonMarkers[i]
@@ -246,15 +245,12 @@ import { fn, BigInt } from 'download0/types'
       const buttonOrigPos_ = buttonOrigPos[i]
       const textOrigPos_ = textOrigPos[i]
       if (button === undefined || buttonText === undefined || buttonOrigPos_ === undefined || textOrigPos_ === undefined || buttonMarker === undefined) continue
-      
       if (i === currentButton) {
         button.url = selectedButtonImg
         button.alpha = 1.0
-        // MARCO DORADO APLICADO
-        button.borderColor = '#FFD700'
-        button.borderWidth = 4
+        button.borderColor = 'rgb(100,180,255)'
+        button.borderWidth = 3
         buttonMarker.visible = true
-        if (!useImageText) buttonText.style = 'gold_ui'
         animateZoomIn(button, buttonText, buttonOrigPos_.x, buttonOrigPos_.y, textOrigPos_.x, textOrigPos_.y)
       } else if (i !== prevButton) {
         button.url = normalButtonImg
@@ -270,7 +266,6 @@ import { fn, BigInt } from 'download0/types'
         buttonText.x = textOrigPos_.x
         buttonText.y = textOrigPos_.y
         buttonMarker.visible = false
-        if (!useImageText) buttonText.style = 'white'
       }
     }
 

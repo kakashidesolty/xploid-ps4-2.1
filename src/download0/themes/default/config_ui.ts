@@ -55,6 +55,7 @@ if (typeof lang === 'undefined') {
     theme: 'default'
   }
 
+  // Store user's payloads so we don't overwrite them
   let userPayloads: string[] = []
   let configLoaded = false
 
@@ -133,8 +134,6 @@ if (typeof lang === 'undefined') {
 
   new Style({ name: 'white', color: 'white', size: 24 })
   new Style({ name: 'title', color: 'white', size: 32 })
-  // AÑADIMOS EL ESTILO DORADO
-  new Style({ name: 'gold_ui', color: '#FFD700', size: 26, weight: 'bold', shadowColor: 'rgba(0,0,0,0.8)', shadowBlur: 4 })
 
   const background = new Image({
     url: 'file:///../download0/img/multiview_bg_VAF.png',
@@ -172,11 +171,11 @@ if (typeof lang === 'undefined') {
     jsmaf.root.children.push(title)
   }
 
-  // AQUI OCULTAMOS EL BOTON DE MUSICA DE LA LISTA VISUAL
   const configOptions = [
     { key: 'autolapse', label: lang.autoLapse, imgKey: 'autoLapse', type: 'toggle' },
     { key: 'autopoop', label: lang.autoPoop, imgKey: 'autoPoop', type: 'toggle' },
     { key: 'autoclose', label: lang.autoClose, imgKey: 'autoClose', type: 'toggle' },
+    { key: 'music', label: lang.music, imgKey: 'music', type: 'toggle' },
     { key: 'jb_behavior', label: lang.jbBehavior, imgKey: 'jbBehavior', type: 'cycle' },
     { key: 'theme', label: lang.theme || 'Theme', imgKey: 'theme', type: 'cycle' }
   ]
@@ -220,7 +219,7 @@ if (typeof lang === 'undefined') {
       btnText.y = btnY + 28
       btnText.style = 'white'
     }
-    buttonTexts.push(btnText as jsmaf.Text)
+    buttonTexts.push(btnText)
     jsmaf.root.children.push(btnText)
 
     if (configOption.type === 'toggle') {
@@ -271,7 +270,7 @@ if (typeof lang === 'undefined') {
           valueLabel.style = 'white'
         }
       }
-      valueTexts.push(valueLabel as Image)
+      valueTexts.push(valueLabel)
       jsmaf.root.children.push(valueLabel)
     }
 
@@ -359,6 +358,7 @@ if (typeof lang === 'undefined') {
   }
 
   function updateHighlight () {
+    // Animate out the previous button
     const prevButtonObj = buttons[prevButton]
     const buttonMarker = buttonMarkers[prevButton]
     if (prevButton >= 0 && prevButton !== currentButton && prevButtonObj) {
@@ -367,11 +367,10 @@ if (typeof lang === 'undefined') {
       prevButtonObj.borderColor = 'transparent'
       prevButtonObj.borderWidth = 0
       if (buttonMarker) buttonMarker.visible = false
-      if (!useImageText && buttonTexts[prevButton]) buttonTexts[prevButton]!.style = 'white'
-      if (!useImageText && valueTexts[prevButton] instanceof jsmaf.Text) (valueTexts[prevButton] as jsmaf.Text).style = 'white'
       animateZoomOut(prevButtonObj, buttonTexts[prevButton]!, buttonOrigPos[prevButton]!.x, buttonOrigPos[prevButton]!.y, textOrigPos[prevButton]!.x, textOrigPos[prevButton]!.y)
     }
 
+    // Set styles for all buttons
     for (let i = 0; i < buttons.length; i++) {
       const button = buttons[i]
       const buttonMarker = buttonMarkers[i]
@@ -382,12 +381,9 @@ if (typeof lang === 'undefined') {
       if (i === currentButton) {
         button.url = selectedButtonImg
         button.alpha = 1.0
-        // MARCO DORADO APLICADO AQUI
-        button.borderColor = '#FFD700'
-        button.borderWidth = 4
+        button.borderColor = 'rgb(100,180,255)'
+        button.borderWidth = 3
         if (buttonMarker) buttonMarker.visible = true
-        if (!useImageText) buttonText.style = 'gold_ui'
-        if (!useImageText && valueTexts[i] instanceof jsmaf.Text) (valueTexts[i] as jsmaf.Text).style = 'gold_ui'
         animateZoomIn(button, buttonText, buttonOrigPos_.x, buttonOrigPos_.y, textOrigPos_.x, textOrigPos_.y)
       } else if (i !== prevButton) {
         button.url = normalButtonImg
@@ -403,8 +399,6 @@ if (typeof lang === 'undefined') {
         buttonText.x = textOrigPos_.x
         buttonText.y = textOrigPos_.y
         if (buttonMarker) buttonMarker.visible = false
-        if (!useImageText) buttonText.style = 'white'
-        if (!useImageText && valueTexts[i] instanceof jsmaf.Text) (valueTexts[i] as jsmaf.Text).style = 'white'
       }
     }
 
@@ -424,7 +418,7 @@ if (typeof lang === 'undefined') {
         if (useImageText) {
           (valueText as Image).url = textImageBase + jbBehaviorImgKeys[currentConfig.jb_behavior] + '.png'
         } else {
-          (valueText as jsmaf.Text).text = jbBehaviorLabels[currentConfig.jb_behavior] || jbBehaviorLabels[0]!
+          (valueText as jsmaf.Text).text = jbBehaviorLabels[currentConfig.jb_behavior] || jbBehaviorLabels[0]
         }
       } else if (key === 'theme') {
         const themeIndex = availableThemes.indexOf(currentConfig.theme)
@@ -450,7 +444,7 @@ if (typeof lang === 'undefined') {
         autopoop: currentConfig.autopoop,
         autoclose: currentConfig.autoclose,
         autoclose_delay: currentConfig.autoclose_delay,
-        music: currentConfig.music, // GUARDADO INTACTO PARA NO ROMPER LA CONSOLA
+        music: currentConfig.music,
         jb_behavior: currentConfig.jb_behavior,
         theme: currentConfig.theme
       },
@@ -485,9 +479,10 @@ if (typeof lang === 'undefined') {
           currentConfig.autopoop = CONFIG.autopoop || false
           currentConfig.autoclose = CONFIG.autoclose || false
           currentConfig.autoclose_delay = CONFIG.autoclose_delay || 0
-          currentConfig.music = CONFIG.music !== false // LEÍDO INTACTO PARA NO ROMPER LA CONSOLA
+          currentConfig.music = CONFIG.music !== false
           currentConfig.jb_behavior = CONFIG.jb_behavior || 0
 
+          // Validate and set theme (themes are auto-discovered from directory scan)
           if (CONFIG.theme && availableThemes.includes(CONFIG.theme)) {
             currentConfig.theme = CONFIG.theme
           } else {
@@ -495,6 +490,7 @@ if (typeof lang === 'undefined') {
             currentConfig.theme = availableThemes[0] || 'default'
           }
 
+          // Preserve user's payloads
           if (configData.payloads && Array.isArray(configData.payloads)) {
             userPayloads = configData.payloads.slice()
           }
@@ -512,7 +508,7 @@ if (typeof lang === 'undefined') {
         }
       } catch (e) {
         log('ERROR: Failed to parse config: ' + (e as Error).message)
-        configLoaded = true 
+        configLoaded = true // Allow saving even on error
       }
     })
   }
@@ -534,8 +530,19 @@ if (typeof lang === 'undefined') {
           log(key + ' = ' + currentConfig.theme)
         }
       } else {
-        const boolKey = key as 'autolapse' | 'autopoop' | 'autoclose'
+        const boolKey = key as 'autolapse' | 'autopoop' | 'autoclose' | 'music'
         currentConfig[boolKey] = !currentConfig[boolKey]
+
+        if (boolKey === 'music') {
+          if (typeof CONFIG !== 'undefined') {
+            CONFIG.music = currentConfig.music
+          }
+          if (currentConfig.music) {
+            startBgmIfEnabled()
+          } else {
+            stopBgm()
+          }
+        }
 
         if (key === 'autolapse' && currentConfig.autolapse === true) {
           currentConfig.autopoop = false
@@ -579,6 +586,7 @@ if (typeof lang === 'undefined') {
       handleButtonPress()
     } else if (keyCode === backKey) {
       log('Restarting...')
+      // Save config before restart
       saveConfig()
       jsmaf.setTimeout(function () {
         debugging.restart()
